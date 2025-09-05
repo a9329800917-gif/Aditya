@@ -1,0 +1,691 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Study — Full Lessons (Combined)</title>
+<style>
+  :root{
+    --accent:#1976d2;
+    --bg:#f4f6f8;
+    --card:#fff;
+    --muted:#666;
+    --success:#2e7d32;
+    --danger:#c62828;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:#111}
+  header{
+    background:var(--accent); color:#fff; padding:12px 14px; display:flex; align-items:center; gap:12px;
+    position:sticky; top:0; z-index:20;
+  }
+  #backBtn{cursor:pointer; font-size:18px; min-width:28px; visibility:hidden}
+  #pageTitle{font-weight:700; font-size:16px; flex:1}
+  main{padding:14px; max-width:1100px; margin:0 auto;}
+
+  .page{display:none}
+  .page.active{display:block}
+
+  .grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:14px; margin-top:10px; }
+  .card{
+    background:linear-gradient(180deg,#e3f2fd,#bbdefb); border-radius:12px; padding:22px; text-align:center; cursor:pointer;
+    box-shadow:0 6px 18px rgba(0,0,0,0.06); user-select:none;
+    transition: transform .12s ease, box-shadow .12s ease;
+  }
+  .card:hover{ transform: translateY(-2px); box-shadow:0 10px 26px rgba(0,0,0,0.08) }
+  .card .emoji{font-size:32px}
+  .lessons-list{ margin-top:12px; display:flex; flex-direction:column; gap:10px; }
+  .lesson{
+    display:flex; gap:12px; align-items:center; background:#fff; border-radius:10px; padding:10px; cursor:pointer;
+    box-shadow:0 4px 12px rgba(0,0,0,0.04);
+    transition: transform .1s ease, box-shadow .1s ease;
+  }
+  .lesson:hover{ transform: translateY(-1px); box-shadow:0 8px 20px rgba(0,0,0,0.06) }
+  .thumb{ width:64px; height:64px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:28px; background:#f1f1f1; flex-shrink:0 }
+  .lesson .meta{ display:flex; flex-direction:column }
+  .lesson .title{ font-weight:700 }
+  .lesson .sub{ color:var(--muted); font-size:13px }
+  .content-wrap{ margin-top:12px; }
+  .container{ max-width:900px; margin:0 auto; background:var(--card); padding:22px; border-radius:10px; box-shadow:0 6px 18px rgba(0,0,0,0.06) }
+  h1{ color:#333; margin-top:0; font-size:22px; text-align:center; padding-bottom:6px }
+  .intro{ background:#fff8e1; padding:12px; border-left:5px solid #ffc107; border-radius:6px }
+  .section-title{ background:#f1f1f1; padding:8px; border-radius:6px; margin-top:14px; font-weight:700 }
+  .qna .question{ font-weight:700; margin-top:12px; color:#444; white-space:pre-line }
+  .qna .answer{ margin-bottom:10px; padding-left:12px; border-left:3px solid #eee; background:transparent; }
+  .mcq-container{ border:1px solid #eee; padding:12px; border-radius:8px; margin-top:12px; background:#fff }
+  .mcq-question{ font-weight:700 }
+  .options{ margin-top:8px; display:flex; flex-direction:column; gap:8px }
+  .opt{
+    padding:10px; border-radius:8px; cursor:pointer; border:1px solid #ddd; background:#fafafa; text-align:left;
+    transition: transform .12s ease, box-shadow .12s ease, background .2s ease;
+  }
+  .opt:hover{ transform: translateY(-2px); box-shadow:0 6px 18px rgba(0,0,0,0.06) }
+  .opt.locked{ pointer-events:none; opacity:0.9 }
+  .opt.correct{ background: #e8f5e9; border-color:rgba(46,125,50,0.2); color:var(--success) }
+  .opt.wrong{ background: #fff0f0; border-color:rgba(198,40,40,0.15); color:var(--danger); animation:shake .45s; }
+  @keyframes shake {
+    0%{ transform: translateX(0) }
+    20%{ transform: translateX(-6px) }
+    40%{ transform: translateX(6px) }
+    60%{ transform: translateX(-4px) }
+    80%{ transform: translateX(4px) }
+    100%{ transform: translateX(0) }
+  }
+  .controls{ display:flex; gap:8px; margin-top:12px; flex-wrap:wrap }
+  .btn{ padding:8px 10px; border-radius:6px; background:var(--accent); color:#fff; border:none; cursor:pointer }
+  .btn.secondary{ background:#555 }
+
+  /* Emoji celebration (from earlier) */
+  @keyframes popOut {
+    0% { transform: scale(0); opacity: 0; }
+    50% { transform: scale(1.6); opacity: 1; }
+    100% { transform: scale(1) translateY(-50px); opacity: 0; }
+  }
+  .emoji-pop {
+    position: fixed;
+    font-size: 2rem;
+    animation: popOut 1s ease forwards;
+    pointer-events: none;
+    z-index: 9999;
+  }
+  @keyframes floatParticle {
+    0% { transform: translate(0, 0) scale(1); opacity: 1; }
+    100% {
+      transform: translate(var(--x), var(--y)) scale(0.5);
+      opacity: 0;
+    }
+  }
+  .particle {
+    position: fixed;
+    font-size: 1.2rem;
+    animation: floatParticle 1s ease forwards;
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  @media (max-width:520px){
+    .thumb{ width:54px; height:54px; font-size:24px }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div id="backBtn" title="Back">⬅</div>
+  <div id="pageTitle">Subjects</div>
+</header>
+
+<main>
+  <section id="subjectsPage" class="page active">
+    <div style="font-weight:700; font-size:18px; margin-bottom:8px">Choose Subject</div>
+    <div class="grid">
+      <div class="card" onclick="openLessons('english')"><div class="emoji">📘</div><div class="name">English</div></div>
+      <div class="card" title="Coming soon"><div class="emoji">📗</div><div class="name">Hindi</div></div>
+      <div class="card" title="Coming soon"><div class="emoji">🔬</div><div class="name">Science</div></div>
+      <div class="card" title="Coming soon"><div class="emoji">🌍</div><div class="name">Social Science</div></div>
+      <div class="card" title="Coming soon"><div class="emoji">🧮</div><div class="name">Maths</div></div>
+      <div class="card" title="Coming soon"><div class="emoji">🕉️</div><div class="name">Sanskrit</div></div>
+    </div>
+  </section>
+
+  <section id="lessonsPage" class="page">
+    <div style="font-weight:700; font-size:18px">English Lessons</div>
+    <div class="lessons-list" id="lessonsList"></div>
+  </section>
+
+  <section id="contentPage" class="page">
+    <div id="contentArea" class="content-wrap"></div>
+  </section>
+</main>
+
+<script>
+/* ----------------------
+   Synth sounds (no external files)
+   - correct: pleasant bell/ding
+   - wrong: short low buzzer/horn
+   ---------------------- */
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioCtx = null;
+function ensureAudio(){
+  if(!audioCtx) audioCtx = new AudioCtx();
+}
+
+// play a pleasant multi-tone bell
+function playCorrectSound(){
+  ensureAudio();
+  const now = audioCtx.currentTime;
+  const gain = audioCtx.createGain();
+  gain.gain.setValueAtTime(0, now);
+  gain.gain.linearRampToValueAtTime(0.12, now+0.01);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now+1.2);
+  gain.connect(audioCtx.destination);
+
+  const freqs = [880, 1320, 1760]; // chord
+  freqs.forEach((f, i) => {
+    const o = audioCtx.createOscillator();
+    o.type = 'sine';
+    o.frequency.value = f;
+    o.connect(gain);
+    o.start(now + i*0.02);
+    o.stop(now + 0.9 + i*0.02);
+  });
+}
+
+// play a short low buzzer / horn-like tone
+function playWrongSound(){
+  ensureAudio();
+  const now = audioCtx.currentTime;
+  const o = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  o.type = 'sawtooth';
+  o.frequency.setValueAtTime(160, now);
+  o.frequency.linearRampToValueAtTime(120, now + 0.15);
+  g.gain.setValueAtTime(0.0001, now);
+  g.gain.exponentialRampToValueAtTime(0.2, now + 0.02);
+  g.gain.exponentialRampToValueAtTime(0.0001, now + 0.5);
+  o.connect(g); g.connect(audioCtx.destination);
+  o.start(now);
+  o.stop(now + 0.5);
+}
+
+/* ----------------------
+   Emoji + particle visual
+   ---------------------- */
+const correctEmojis = ["😎","🦊","✅","✔","🎉","🌟","🔥"];
+const wrongEmojis = ["😒","😣","😕"];
+
+function showEmoji(target, isCorrect){
+  const rect = target.getBoundingClientRect();
+  const emoji = document.createElement('span');
+  emoji.className = 'emoji-pop';
+  emoji.textContent = isCorrect ? correctEmojis[Math.floor(Math.random()*correctEmojis.length)] : wrongEmojis[Math.floor(Math.random()*wrongEmojis.length)];
+  // center horizontally
+  const left = rect.left + rect.width/2;
+  emoji.style.left = (left) + 'px';
+  emoji.style.top = (rect.top - 8) + 'px';
+  document.body.appendChild(emoji);
+  setTimeout(()=> emoji.remove(), 1000);
+
+  if(isCorrect){
+    // particle burst
+    for(let i=0;i<10;i++){
+      const p = document.createElement('span');
+      p.className = 'particle';
+      p.textContent = correctEmojis[Math.floor(Math.random()*correctEmojis.length)];
+      const originX = left + (Math.random()*40 - 20);
+      const originY = rect.top + (Math.random()*20 - 10);
+      p.style.left = originX + 'px';
+      p.style.top = originY + 'px';
+      p.style.setProperty('--x', `${(Math.random()-0.5)*200}px`);
+      p.style.setProperty('--y', `${(Math.random()-0.5)*200}px`);
+      document.body.appendChild(p);
+      setTimeout(()=> p.remove(), 1000);
+    }
+  }
+}
+
+/* ----------------------
+   App navigation + data
+   ---------------------- */
+
+const backBtn = document.getElementById('backBtn');
+const pageTitle = document.getElementById('pageTitle');
+const subjectsPage = document.getElementById('subjectsPage');
+const lessonsPage = document.getElementById('lessonsPage');
+const contentPage = document.getElementById('contentPage');
+const lessonsList = document.getElementById('lessonsList');
+const contentArea = document.getElementById('contentArea');
+
+let stack = [];
+
+/* ---------- DATA (QnA kept EXACT as provided; MCQs added from your Quizlet list) ---------- */
+const data = {
+  english: {
+
+    'Letter': {
+      title: 'A Letter to God ✉️',
+      emoji: '✉️',
+      sub: 'Lencho — faith & irony',
+      qna: [
+`Q1. What did Lencho hope for?
+Ans- Lencho hoped for a good rain for a good harvest.`,
+`Q2. Why did Lencho say the raindrops were like 'new coins'?
+Ans- Lencho said that the raindrops were like 'new coins' because he knew rain would bring a good harvest.`,
+`Q3. How did the rain change? What happened to Lencho's fields?
+Ans- The rain changed into hailstones and it began to fall along with the rain. All the crops in Lencho's field got destroyed due to hailstones.`,
+`Q4. What were Lencho's feelings when the hail stopped?
+Ans- Lencho felt disappointed when he saw his field destroyed by hailstones.`,
+`Q5. Who or what did Lencho have faith in? What did he do?
+Ans- Lencho had firm faith in God. He wrote a letter to God demanding 100 pesos so that he could sow his field again.`,
+`Q6. Who read the letter?
+Ans- The postmaster read the letter.`,
+`Q7. What did the postmaster do then?
+Ans- The postmaster laughed when he saw Lencho's letter addressed to God, but soon realized his pain and decided to help him by collecting money.`,
+`Q8. Was Lencho surprised to find a letter for him with money in it?
+Ans- No, Lencho was not at all surprised to find a letter for him with money in it.`,
+`Q9. What made him angry?
+Ans- Lencho became angry as he counted the money.`,
+`Q10. Who does Lencho have complete faith in? Which sentences in the story tell you this?
+Ans- Lencho has complete faith in God. There are few sentences which show his faith in God.
+i) "But in the hearts of all who live in that solitary house in the middle of the valley, there was a single hope from God."
+ii) "God," he wrote, "if you don't help me, my family and I will go hungry this year."
+iii) "God could not have made a mistake, nor could he have denied Lencho what he had requested."`
+      ],
+      mcq: [
+        { q: "What did Lencho hope for?", options: ["A) A new house","B) A good rain for a good harvest","C) Money from God","D) To visit the town","E) A letter from the postman"], answerIndex: 1 },
+        { q: "Why did Lencho say the raindrops were like 'new coins'?", options: ["A) Because they looked shiny","B) Because he loved rain","C) Because rain meant a good harvest and money","D) Because he wanted to compare rain with money","E) Because rain always comes with silver drops"], answerIndex: 2 },
+        { q: "How did the rain change? What happened to Lencho’s fields?", options: ["A) It became snow and saved the crops","B) It stopped suddenly and crops survived","C) It turned into hail and destroyed all the crops","D) It became heavy rain and made crops grow fast","E) It never rained at all"], answerIndex: 2 },
+        { q: "What were Lencho’s feelings when the hail stopped?", options: ["A) Joyful","B) Disappointed and heartbroken","C) Thankful","D) Indifferent","E) Angry at God"], answerIndex: 1 },
+        { q: "Who or what did Lencho have faith in? What did he do?", options: ["A) His family; asked them for help","B) The government; requested aid","C) His neighbors; borrowed money","D) God; wrote a letter asking for 100 pesos","E) The postmaster; directly requested money"], answerIndex: 3 },
+        { q: "Who read Lencho’s letter?", options: ["A) The postman","B) The villagers","C) The postmaster","D) His wife","E) A farmer friend"], answerIndex: 2 },
+        { q: "What did the postmaster do after reading Lencho’s letter?", options: ["A) Ignored it","B) Threw it away","C) Laughed first, then collected money to help Lencho","D) Sent it to the government","E) Gave it back to Lencho"], answerIndex: 2 },
+        { q: "Was Lencho surprised to find a letter for him with money in it?", options: ["A) Yes, very surprised","B) No, not at all","C) A little shocked","D) He fainted out of joy","E) He thought it was a mistake"], answerIndex: 1 },
+        { q: "What made Lencho angry after receiving the money?", options: ["A) He thought God sent less money","B) He felt cheated by his family","C) The money was stolen by villagers","D) He counted it and found it was less than he asked for","E) He didn’t want money, he wanted food"], answerIndex: 3 },
+        { q: "Who does Lencho have complete faith in?", options: ["A) The postmaster","B) His neighbors","C) His wife","D) His own hard work","E) God"], answerIndex: 4 }
+      ]
+    },
+
+    'Dust': {
+      title: 'Dust Of Snow ❄️',
+      emoji: '❄️',
+      sub: 'Robert Frost — small act, big effect',
+      qna: [
+`Q 1. What is a 'dust of snow' ? What does the poet say that has changed his mood? How has the poet's mood changed?
+Ans- The "dust of snow" means the fine particles of snow. The sudden shower of the dust of snow from the hemlock tree changed the poet's mood. The poet's mood changed from sad to happy.`,
+`Q 2. How does Frost present nature in this poem?
+Ans- Frost has presented nature in a very different manner in this poem. The crow and hemlock tree represent sorrow. The dust of snow that is shaken off the hemlock tree by the crow stands for joy that Frost experiences. Therefore he has used an unconventional tree and bird in order to contrast them with joy in the form of snow.`,
+`Q 3. What are the birds that are usually named in poems?
+Ans- Generally, the poets take the birds and trees which are known for their beauty and qualities. But here the poet has taken a totally different approach. which is not often used in poems. He chose a crow.`,
+`Q 4. How did the dust of snow affect the poet?
+Ans- It changed the poet's sad mood into happiness.`,
+`Q 5. What is the central idea of the poem?
+Ans- The central idea of the poem is that sometimes even a small incident can bring big changes in our life..`,
+`Q 6. What do 'crow' and' hemlock' symbolize in the poem ?
+Ans- The crow and hemlock tree symbolize the dark, depressive, sorrowful and bitter side of nature.`
+      ],
+      mcq: [
+        { q: "Who is the poet of the poem 'Dust of Snow'?", options: ["A) G.L. Fuentes","B) William Wordsworth","C) Robert Frost","D) Walt Whitman","E) William Blake"], answerIndex: 2 },
+        { q: "What kind of mood was the poet in before the crow shook the snow?", options: ["A) Angry mood","B) Excited mood","C) Sad mood","D) Joyful mood","E) Peaceful mood"], answerIndex: 2 },
+        { q: "What did the crow shake down on the poet?", options: ["A) Leaves","B) Raindrops","C) Dust of snow","D) Twigs","E) Fruit"], answerIndex: 2 },
+        { q: "The Hemlock tree symbolizes...", options: ["A) Strength","B) Beauty","C) Prosperity","D) Omen, sadness and sorrow","E) Growth"], answerIndex: 3 },
+        { q: "Where was the crow sitting?", options: ["A) On a pine tree","B) On a mango tree","C) On a hemlock tree","D) On the poet’s window","E) On the ground"], answerIndex: 2 },
+        { q: "What does 'dust of snow' represent?", options: ["A) Joy and energy","B) Fear","C) Destruction","D) Sorrow","E) Laziness"], answerIndex: 0 },
+        { q: "The poet stood under which tree?", options: ["A) Pine tree","B) Oak tree","C) Mango tree","D) Hemlock tree","E) Neem tree"], answerIndex: 3 },
+        { q: "How many lines are in the poem 'Dust of Snow'?", options: ["A) 6 lines","B) 8 lines","C) 10 lines","D) 12 lines","E) 16 lines"], answerIndex: 1 },
+        { q: "Which bird shook the dust of snow?", options: ["A) Sparrow","B) Pigeon","C) Crow","D) Parrot","E) Dove"], answerIndex: 2 },
+        { q: "What is the central idea of the poem?", options: ["A) Life is always sorrowful","B) Birds symbolize sadness","C) Small incidents can change mood and life positively","D) Nature is always cruel","E) Only joy exists in nature"], answerIndex: 2 }
+      ]
+    },
+
+    'Fire': {
+      title: 'Fire and Ice 🔥',
+      emoji: '🔥',
+      sub: 'Robert Frost — desire vs hatred',
+      qna: [
+`Q1. There are many ideas about how the world will end. Do you think the world will end some day?
+Ans- There are many ideas about how the world will end as anything that has a beginning will have an end.`,
+`Reference to context questions:-
+A. Read the given stanza and answer the questions that follow-
+"Some say the world will end in fire
+Some say in ice.
+From what I've tasted of desire
+I hold with those who favour fire."
+Q1. Name the poem from where this extract has been taken?
+Ans- Above extract has been taken from the poem 'Fire and Ice'.`,
+`Q2. Who has written the above lines?
+Ans- The above lines have been written by the poet named' Robert Frost '.`,
+`Q3. What is the main theme of the poem 'Fire and Ice' according to the poet?
+Ans- According to the poet 'Frost' the main theme of the poem 'Fire and Ice' is that the world will end with the excess of desire and hatred.`,
+`Q4. According to Robert Frost, what do 'Fire' and 'Ice' stand for?
+Ans- According to Robert Frost 'Fire' stands for greed, avarice, and 'Ice' stands for cruelty, rigidity and hatred.`,
+`Q5. What is the central idea of the poem?
+Ans- The poem presents two possibilities about the end of the world. It will be due to fire and ice i.e uncontrolled desires and hatred.`
+      ],
+      mcq: [
+        { q: "Who wrote the poem 'Fire and Ice'?", options: ["A) G.L. Fuentes","B) Walt Whitman","C) Robert Frost","D) William Wordsworth","E) W.B. Yeats"], answerIndex: 2 },
+        { q: "What does the word 'Fire' symbolize in the poem?", options: ["A) Desire","B) Hatred","C) Love","D) Anger","E) Kindness"], answerIndex: 0 },
+        { q: "What does 'Ice' stand for?", options: ["A) Desire","B) Hatred and cruelty","C) Love","D) Joy","E) Greed"], answerIndex: 1 },
+        { q: "What would suffice if the world were to perish twice?", options: ["A) Only fire","B) Only ice","C) Neither fire nor ice","D) Both fire and ice","E) None of these"], answerIndex: 3 },
+        { q: "What is the meaning of 'perish' in the poem?", options: ["A) To grow","B) To win","C) To die","D) To shine","E) To move"], answerIndex: 2 }
+      ]
+    },
+
+    'Mandela': {
+      title: 'Nelson Mandela: Long Walk to Freedom 👤',
+      emoji: '👤',
+      sub: 'Mandela — struggle & courage',
+      qna: [
+`Q1. Where did the ceremony take place? Can you name any public buildings in India that are made of 'sand stones'?
+Ans- The ceremonies took place in the campus of the Union Building of Pretoria. In India Rashtrapati Bhavan and Red Fort buildings are made of red sandstones.`,
+`Q2. Can you say how 10th May is an 'autumn day' in South Africa ?
+Ans- In South Africa 10th may is an autumn day because on this day the people of South Africa were free from all discriminations of color and race.`,
+`Q3. At the beginning of his speech Mandela mentions "as extraordinary human disaster". What does he mean by this? What is The "glorious human achievement" he speaks of at the end?
+Ans- By an extraordinary human disaster Mandela means to state the practice of apartheid in South Africa. During this the blacks were looked down by the whites. By glorious human achievement he means that the blacks have achieved freedom and now they will never be oppressed.`,
+`Q4. What does Mandela thank the international leaders for?
+Ans- Mandela felt obliged in the presence of international leaders of the swearing. He thus thanks all of them for having come to witness the historical ceremony.`,
+`Q5. What ideals does he set out for the future of South Africa ?
+Ans- He sets out the ideals of liberating all the people from the bondage of poverty, deprivation, suffering, gender and other discriminations.`,
+`Q6. What does Mandela think about the oppressor and the oppressed?
+Ans- Mandela thinks that both oppressor and oppressed need to be liberated. A man who takes away another man's freedom is a prisoner of hatred and prejudice and the oppressed is a prisoner of oppression.`,
+`Q7. How does Mandela describe the systems of government in his country i) in the first decade, and ii) in the final decade of the twentieth century?
+Ans- i) In the first decade of twentieth century the white skinned people of South Africa established a system of racial domination against the dark skinned people. This created the most inhuman systems.
+ii) In the final decade of the twentieth century the previous system of government had been over turned and replaced by the democratic government or system.`,
+`Q8. Why were two national anthems sung?
+Ans- The two national anthems were sung which symbolized the equality of rights between whites and blacks.`
+      ],
+      mcq: [
+        { q: "Where did the ceremonies take place?", options: ["A) Red Fort","B) Sandstone amphitheatre in Pretoria","C) Rashtrapati Bhavan","D) Cape Town Hall","E) Durban Square"], answerIndex: 1 },
+        { q: "Which party did Mandela join?", options: ["A) Communist Party","B) Labour Party","C) African National Congress","D) Liberal Party","E) Socialist Party"], answerIndex: 2 },
+        { q: "What did Mandela learn about courage?", options: ["A) It means no fear","B) It is triumph over fear","C) It is avoiding fear","D) It is natural","E) It is weakness"], answerIndex: 1 },
+        { q: "What was it that the nation needed to be liberated from?", options: ["A) Poverty","B) Discrimination","C) Oppression","D) All of the above","E) Hatred"], answerIndex: 3 },
+        { q: "How many deputy presidents were elected in South Africa?", options: ["A) One","B) Two","C) Three","D) Four","E) None"], answerIndex: 1 },
+        { q: "What change brought international leaders to South Africa?", options: ["A) End of monarchy","B) End of apartheid","C) Start of independence war","D) Gold discovery","E) Colonial rule"], answerIndex: 1 },
+        { q: "When was the inauguration day?", options: ["A) 10th May","B) 26th January","C) 15th August","D) 5th June","E) 1st July"], answerIndex: 0 },
+        { q: "Who is the daughter of Nelson Mandela?", options: ["A) Zenani","B) Zindzi","C) Winnie","D) Lindiwe","E) Nomvula"], answerIndex: 0 },
+        { q: "Who was sworn in as the first Deputy President of South Africa?", options: ["A) De Klerk","B) Thabo Mbeki","C) Jacob Zuma","D) Oliver Tambo","E) Julius Malema"], answerIndex: 1 }
+      ]
+    },
+
+    'Flight': {
+      title: "His First Flight 🕊️",
+      emoji: '🕊️',
+      sub: "Liam O'Flaherty — overcoming fear",
+      qna: [
+`Q1. Why was the young Seagull afraid to fly?
+Ans- The young Seagull was afraid to fly because it was his first flight and he was scared of falling and hurting himself. He thought that his wings would not support him while flying.`,
+`Q2. "The sight of the food maddened him". What does this suggest? What compelled the young seagull to finally fly?
+Ans- The young seagull was very hungry, so the moment he saw the food he was desperate to eat it. It was this hunger that ultimately compelled the young seagull to finally fly.`,
+`Q3. "They were beckoning to him, calling shrilly". Why did the seagull's father and mother threaten him and cajole him to fly?
+Ans- The seagull parents had tried everything but he was not willing to fly due to fear of falling down. He did not make any effort to fly, that's why the whole family had left him alone and threatened and cajoled him to fly.`,
+`Short Answer Questions:-
+Q1. How did the young seagull's parents teach him the art of flying?
+Ans- The young seagull's parents taught him by coaxing, scolding and leaving him on the ledge to starve knowing that hunger would finally make him fly.`,
+`Q2. How did the Seagull get over his fear of flying?
+Ans- He got over his fear when his hunger for the fish became stronger than his fear of falling. He fell downwards, and at the next moment, he suddenly felt his wings spread outward and he finally started flying.`,
+`Q3. How did the Seagull and his family celebrate his first flight?
+Ans- When the seagull flew for the first time, all his family members flew around him, calling and congratulating him.`
+      ],
+      mcq: [
+        { q: "Who is the author of 'His First Flight'?", options: ["A) G.L. Fuentes","B) Liam O’ Flaherty","C) Frederick Forsyth","D) Robert Frost","E) William Blake"], answerIndex: 1 },
+        { q: "The lesson 'His First Flight' is about a...", options: ["A) Crow","B) Sparrow","C) Seagull","D) Parrot","E) Pigeon"], answerIndex: 2 },
+        { q: "What was the seagull afraid of?", options: ["A) Water","B) Food","C) Flying","D) Sunlight","E) His parents"], answerIndex: 2 },
+        { q: "Who gives the young seagull a piece of fish?", options: ["A) Father seagull","B) Mother seagull","C) Brother seagull","D) Sister seagull","E) A fisherman"], answerIndex: 1 },
+        { q: "The sight of ....... maddened the seagull.", options: ["A) Water","B) Food","C) Sky","D) Other birds","E) Stones"], answerIndex: 1 },
+        { q: "What food did the seagull’s mother get for it?", options: ["A) Worms","B) Insects","C) Grains","D) Fish","E) Seeds"], answerIndex: 3 }
+      ]
+    },
+
+    'Aeroplane': {
+      title: 'The Black Aeroplane ✈️',
+      emoji: '✈️',
+      sub: 'Frederick Forsyth — mystery & rescue',
+      qna: [
+`Q1. "I'll take the risk" What is the risk? Why does the narrator take it?
+Ans- The author was eager to reach his home to spend his holiday with his family. The visibility was almost zero in the storm but the narrator decided to fly through the storm as he did not want to miss the chance to meet his family at breakfast.`,
+`Q2. Describe the narrator's experience as he flew the aeroplane into the storm.
+Ans- As the narrator entered the storm, his plane started jumping and twisting. He could not see anything outside the plane as it was black, compass and the other instruments had also stopped to function. It was a terrible and fearsome experience for him.`,
+`Q3. Why does the narrator say, "I landed and was not sorry to walk away from the old Dakota..."?
+Ans- After landing the plane, the narrator wasn't sorry to walk away from the old Dakota as he had a horrific experience flying that Plane. Finally, he was happy that he had landed the plane safely.`,
+`Q4. What made the woman in the control center look at the narrator strangely?
+Ans- The woman in the control center looked at the narrator strangely because the narrator asked him about the black aeroplane and she saw no one except the narrator's plane in the sky during the storm. Even the radar showed only the narrator's plane that night in the sky.`,
+`Q5. What do you think helped the narrator to reach safely?
+Ans- It is very difficult to say about the unknown pilot who helped the narrator. But probably it was the narrator himself that helped him to overcome the fear in the storm as no other plane was seen in the radar, except the narrator's Dakota plane.`,
+`Reference to context questions:-
+Q1. Who is the pilot of the old Dakota?
+Ans- The narrator himself.
+Q2. From where was he flying to?
+Ans- He was flying to England.
+Q3. Why did he look at the compass?
+Ans- He looked at the compass to know the direction.
+Q4. What made him risk the storm clouds ?
+Ans- His desire to have breakfast at home made him risk the storm clouds.
+Q5. Find a word from the passage which means 'moved to its left and right'?
+Ans- It is 'twisted".
+Q6. How far was the narrator from Parris when he saw the dark clouds in the sky?
+Ans: a. 150 k.m.
+Q7. When the pilot of the black aeroplane asked to follow him, in which direction did he turn the aeroplane?
+Ans: a. North
+Q8. After how much time the pilot reached the runway?
+Ans: d. after half an hour`
+      ],
+      mcq: [
+        { q: "Which plane was the author flying?", options: ["A) Old Dakota DS 088","B) Boeing 737","C) Air India 747","D) Fighter Jet","E) Airbus A320"], answerIndex: 0 },
+        { q: "Who is the author of 'The Black Aeroplane'?", options: ["A) Robert Frost","B) Liam O’ Flaherty","C) Frederick Forsyth","D) G.L. Fuentes","E) William Blake"], answerIndex: 2 },
+        { q: "Where did he head towards?", options: ["A) France","B) England","C) Italy","D) Spain","E) Germany"], answerIndex: 1 },
+        { q: "How far was the narrator from Paris when he saw the storm clouds?", options: ["A) 50 km","B) 100 km","C) 150 km","D) 200 km","E) 250 km"], answerIndex: 2 },
+        { q: "After how much time did the pilot reach the runway?", options: ["A) 10 minutes","B) 15 minutes","C) 20 minutes","D) Half an hour","E) One hour"], answerIndex: 3 }
+      ]
+    },
+
+    'Surgery': {
+      title: 'A Triumph of Surgery 🐶',
+      emoji: '🐶',
+      sub: "James Herriot — vet's clever cure",
+      qna: [
+`Q1. Why is Mrs. Pumphrey worried about Tricki ?
+Ans- Mrs. Pumphrey is worried about Tricki because he would eat nothing and spend all his time lying on the rug and panting. He refused to eat his favourite dishes and would have bouts of vomiting. Tricki did not want to go for walks or do anything at all.`,
+`Q2. What does she do to help him?Is she wise in this?
+Ans- She called the veterinary doctor to help Tricki and her decision was wise because after this the doctor suggested that Tricki should be hospitalised. She let the dog go with the doctor and the doctor succeeded in curing Tricki.`,
+`Q3. How does he treat the dog?
+Ans- James Herriot treats Tricki just like he would treat an overweight and lazy dog, which Tricki is. He cuts down his food intake and keeps him under strict observation for the initial days at hospital. His health showed quick improvement when his diet was controlled. He was allowed to play with other dogs as well which gave him some exercise.`,
+`Q4. Why is he tempted to keep Tricki on as a permanent guest?
+Ans- He is tempted to keep Tricki on as a permanent guest because as soon as Mrs. Pumphrey heard that Tricki was convalescing rapidly, she sent in two dozen fresh eggs at a time to build up Tricki's strength. Mr. Herriot and his partners would have a royal breakfast of two eggs daily. He does not want to lose the fresh eggs, wine and brandy which he is getting in Tricki's name.`,
+`Q5. Why does Mrs Pumphrey think the dog's recovery is "a triumph of surgery"?
+Ans- Mrs. Pumphrey thinks that the dog's recovery is "a triumph of surgery" because Tricki has recovered completely in a short time without any actual surgery.`,
+`Short Answer Questions
+Q1. How did the doctor cure Tricki?
+Ans- The doctor cured Tricki by controlling his food intake and making him exercise by playing with other dogs.`,
+`Q2. What did Mrs. Pumphrey feed Tricki for its good health?
+Ans- She fed him cod-liver oil and a bowl of Horlicks.`,
+`Q3. What was the name of the doctor in this story?
+Ans- The doctor's name was James Herriot.`,
+`Q4. What did Mrs. Pumphrey bring for the dog?
+Ans- She brought fresh eggs, wine and brandy to build up Tricki's strength.`
+      ],
+      mcq: [
+        { q: "How would you describe Mrs. Pumphrey?", options: ["A) Careless","B) Over-doing and over-indulgent","C) Strict","D) Harsh","E) Wise"], answerIndex: 1 },
+        { q: "What is the meaning of the word 'convalescing'?", options: ["A) Sleeping","B) Playing","C) Eating","D) Recovering","E) Falling ill"], answerIndex: 3 },
+        { q: "What did Mrs. Pumphrey think her dog was suffering from?", options: ["A) Obesity","B) Weakness","C) Malnutrition","D) Infection","E) Allergies"], answerIndex: 2 },
+        { q: "Who is 'I' in the story 'A Triumph of Surgery'?", options: ["A) Tricki","B) Mr. Herriot","C) Mrs. Pumphrey","D) Postman","E) Neighbor"], answerIndex: 1 }
+      ]
+    },
+
+    'Thief': {
+      title: "The Thief's Story 🕵️",
+      emoji: '🕵️',
+      sub: 'Ruskin Bond — trust & transformation',
+      qna: [
+`Q1. Who does 'l' refer to in this Story?
+Ans- 'l' in 'The Thief's Story' refers to the narrator of the story Hari Singh, who was a fifteen-year old experienced thief.`,
+`Q2. What is he " a fairly successful hand" at?
+Ans- He has "a fairly successful hand" at stealing and robbing people by winning their confidence.`,
+`Q3. What does he get from Anil in return for his work?
+Ans- Hari Singh gets education and good will in return for his work from Anil. He tried to make him a liberated and good person. Anil gives him food and shelter as well.`,
+`Q4. How does the thief think Anil will react to the theft?
+Ans- The thief thought that Anil would be sad to know of the theft done by him not because of the loss of money but because of the loss of trust he had in Hari.`,
+`Q5. What does he say about the different reactions of people when they are robbed?
+Ans- He says with his experience that a greedy man shows fear; the rich, anger and a poor man acceptance when they are robbed.`,
+`Q6. Does Anil realise that he has been robbed?
+Ans- Yes. Anil realised that he had been robbed, as he gave a fifty rupee note to Hari which was still damp due to the over night's rain.`,
+`Q7. Why does Anil not hand the thief over to the police ?
+Ans- Anil does not hand over the thief to the police because he realised that Hari had learnt his lesson and had changed himself. Otherwise he would never have come back and kept the money at the same place from where he had stolen it.`,
+`Short Answer Questions
+Q1. Why did Hari Singh not make many friends?
+Ans- Hari Singh did not make many friends because he kept on changing his name and his location frequently to avoid being caught by the police or his former employers.`,
+`Q2. Why did Hari Singh decide to come back to Anil?
+Ans- Hari Singh decided to come back to Anil because he realised that Anil was a very good person and was teaching him to read and write which would help him become an honest and respectable person in the future.`,
+`Q3. Why did Hari Singh choose Anil to be his next victim?
+Ans- Hari Singh chose Anil to be his next victim because he was a simple and easygoing person and was not very rich and could be easily robbed.`,
+`Q4. Why was it difficult for Hari Singh to rob Anil?
+Ans- It was difficult for Hari Singh to rob Anil because Anil was so trusting and kind. This made it difficult for Hari Singh to betray his trust.`,
+`Q5. Why did Anil hire Hari Singh?
+Ans- Anil hired Hari Singh as a helping hand in his house.`,
+`Q6. What was Anil's job? What did he usually do with the money he earned?
+Ans- Anil was a writer who wrote for magazines. He would borrow money from others and would earn money from his writing.`,
+`Q7. Why did Hari Singh change his name every month?
+Ans- Hari Singh changed his name every month to avoid the police and his former employers.`,
+`Q8. How did Hari Singh know that Anil had forgiven him?
+Ans- Hari Singh knew that Anil had forgiven him because Anil gave him a fifty rupee note that was still wet from the rain, but he didn't say anything about it.`,
+`Q9. Why did Hari Singh not board the train?
+Ans- Hari Singh did not board the train because his conscience stopped him. He realised that he was leaving behind the only person who had ever trusted and tried to educate him.`
+      ],
+      mcq: [
+        { q: "How old was Anil?", options: ["A) 20 years","B) 22 years","C) 23 years","D) 25 years","E) 30 years"], answerIndex: 3 },
+        { q: "How old was the thief boy Hari Singh?", options: ["A) 12 years","B) 13 years","C) 15 years","D) 18 years","E) 20 years"], answerIndex: 2 },
+        { q: "Anil lived in a room in a shop named:", options: ["A) Jumna Sweet Shop","B) Delhi Cloth House","C) Banaras Saree Store","D) Bombay Silk House","E) Madras Coffee Shop"], answerIndex: 0 }
+      ]
+    }
+
+  } // end english
+}; // end data
+
+/* ---------- Rendering & MCQ logic ---------- */
+
+function showPage(id){
+  subjectsPage.classList.remove('active');
+  lessonsPage.classList.remove('active');
+  contentPage.classList.remove('active');
+  document.getElementById(id).classList.add('active');
+  if(id==='subjectsPage'){ backBtn.style.visibility='hidden'; pageTitle.innerText='Subjects' }
+  else if(id==='lessonsPage'){ backBtn.style.visibility='visible'; pageTitle.innerText='English Lessons' }
+  else if(id==='contentPage'){ backBtn.style.visibility='visible'; /* set in openLesson */ }
+}
+
+backBtn.addEventListener('click', ()=>{
+  if(stack.length>0){
+    const prev = stack.pop();
+    showPage(prev);
+    if(prev==='lessonsPage') pageTitle.innerText='English Lessons';
+    else if(prev==='subjectsPage') pageTitle.innerText='Subjects';
+  } else {
+    showPage('subjectsPage');
+  }
+});
+
+function openLessons(subject){
+  stack.push('subjectsPage');
+  lessonsList.innerHTML = '';
+  const keys = Object.keys(data[subject] || {});
+  keys.forEach(key => {
+    const lesson = document.createElement('div');
+    lesson.className = 'lesson';
+    lesson.innerHTML = `<div class="thumb">${data[subject][key].emoji}</div><div class="meta"><div class="title">${data[subject][key].title}</div><div class="sub">${data[subject][key].sub || ''}</div></div>`;
+    lesson.addEventListener('click', ()=> openLesson(subject,key));
+    lessonsList.appendChild(lesson);
+  });
+  showPage('lessonsPage');
+}
+
+function openLesson(subject,key){
+  stack.push('lessonsPage');
+  const lesson = data[subject][key];
+  pageTitle.innerText = lesson.title;
+  contentArea.innerHTML = renderLessonHTML(lesson);
+  attachMCQHandlers();
+  showPage('contentPage');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function renderLessonHTML(lesson){
+  let html = `<div class="container"><h1>${escapeHtml(lesson.title)}</h1><p style="text-align:center;font-style:italic">${escapeHtml(lesson.sub || '')}</p><div class="intro"><p>ज़रूर, यहाँ उन सभी सवालों के जवाब हैं, जो आपके पीडीएफ में दिए गए हैं, ठीक उसी तरह से जैसे वे मूल फ़ाइल में लिखे गए हैं।</p></div>`;
+  // QnA
+  html += `<h2 class="section-title">NCERT Solutions</h2><div class="qna">`;
+  lesson.qna.forEach(q=>{
+    const parts = escapeHtml(q).replace(/\n/g,'\n');
+    html += `<div class="question">${parts}</div>`;
+  });
+  html += `</div>`;
+  // MCQ
+  html += `<h2 class="section-title">MCQ</h2>`;
+  lesson.mcq.forEach((m,mi)=>{
+    html += `<div class="mcq-container" data-qindex="${mi}"><div class="mcq-question">${escapeHtml(m.q)}</div><div class="options">`;
+    m.options.forEach((opt,oi)=>{
+      html += `<div class="opt" data-answer="${oi}">${escapeHtml(opt)}</div>`;
+    });
+    html += `</div></div>`;
+  });
+  html += `<div class="controls"><button class="btn" onclick="resetMCQs()">Reset MCQs</button><button class="btn secondary" onclick="scrollToTop()">Back to top</button></div>`;
+  html += `</div>`;
+  return html;
+}
+
+function attachMCQHandlers(){
+  document.querySelectorAll('.mcq-container').forEach(container=>{
+    const opts = container.querySelectorAll('.opt');
+    opts.forEach((opt, idx)=>{
+      opt.addEventListener('click', onOptionClick);
+    });
+  });
+}
+
+function onOptionClick(e){
+  const el = e.currentTarget;
+  if(el.classList.contains('locked')) return;
+  const parent = el.parentElement;
+  const chosenIndex = parseInt(el.getAttribute('data-answer'), 10);
+  // Find correct option index by reading any option with class? We stored data-answer per opt as index; correct index is the one in parent where option text matches lesson mcq answerIndex.
+  // But simpler: find the mcq-container -> qindex -> get from data structure
+  const mcqContainer = parent.closest('.mcq-container');
+  const qIndex = parseInt(mcqContainer.getAttribute('data-qindex'), 10);
+  // Need to find current lesson: pageTitle contains lesson title; search in data['english'] for matching title
+  const lesson = findLessonByTitle(pageTitle.innerText);
+  if(!lesson) return;
+  const mcq = lesson.mcq[qIndex];
+  const correctIndex = mcq.answerIndex;
+  // lock and mark
+  parent.querySelectorAll('.opt').forEach((o, oi)=>{
+    o.classList.add('locked');
+    if(oi === correctIndex) o.classList.add('correct');
+  });
+  if(chosenIndex !== correctIndex){
+    el.classList.add('wrong');
+    showEmoji(el, false);
+    playWrongSound();
+  } else {
+    showEmoji(el, true);
+    playCorrectSound();
+  }
+}
+
+function resetMCQs(){
+  document.querySelectorAll('.opt').forEach(o=>{
+    o.classList.remove('locked','correct','wrong');
+  });
+  scrollToTop();
+}
+
+function scrollToTop(){ window.scrollTo({top:0,behavior:'smooth'}); }
+
+function escapeHtml(s){
+  if(!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+function findLessonByTitle(title){
+  const subject = 'english';
+  for(const key in data[subject]){
+    if(data[subject][key].title === title) return data[subject][key];
+  }
+  return null;
+}
+
+/* ---------- Init ---------- */
+function init(){
+  // render lessons list
+  lessonsList.innerHTML = '';
+  const subject = 'english';
+  for(const key in data[subject]){
+    const lesson = data[subject][key];
+    const div = document.createElement('div');
+    div.className = 'lesson';
+    div.innerHTML = `<div class="thumb">${lesson.emoji}</div><div class="meta"><div class="title">${lesson.title}</div><div class="sub">${lesson.sub || ''}</div></div>`;
+    div.addEventListener('click', ()=> openLesson(subject,key));
+    lessonsList.appendChild(div);
+  }
+  showPage('subjectsPage');
+}
+init();
+</script>
+
+</body>
+</html>
